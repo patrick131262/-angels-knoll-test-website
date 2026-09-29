@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Angels Knoll (Bunker Hill Parcel Y-1, 361 S. Hill St, Los Angeles): an interactive map of stakeholders, public records, lawsuits and housing context, with sources."><title>Angels Knoll Site Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: a drawing set. Left sheet index, title block, then one "sheet" of square tiles
+     with wires drawn between connected tiles. Clicking a tile opens the next, smaller sheet. */
+  :root{
+    --paper:#ECEAE0; --paper-2:#E2DFD1; --ink:#1F2421; --ink-soft:#4B5049; --line:#C9C4B4;
+    --political:#3457A6; --financial:#B8792F; --cultural:#3F6B4F; --flag:#A33B2B;
+    --history:#6B6558; --record:#1F2421;
+    --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1B1D18; --paper-2:#23261F; --ink:#E9E6DA; --ink-soft:#B8B6A8; --line:#3A3D33;
+      --political:#7896D1; --financial:#D9A05B; --cultural:#7CAE8C; --flag:#D68271;
+      --history:#A89F8C; --record:#E9E6DA; color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1B1D18; --paper-2:#23261F; --ink:#E9E6DA; --ink-soft:#B8B6A8; --line:#3A3D33;
+    --political:#7896D1; --financial:#D9A05B; --cultural:#7CAE8C; --flag:#D68271;
+    --history:#A89F8C; --record:#E9E6DA; color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{min-height:100%;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;}
+  h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0;text-wrap:balance;}
+  p{line-height:1.55;margin:0 0 1em 0;max-width:66ch;}
+  button{font-family:var(--sans);color:inherit;}
+  a{color:var(--political);}
+
+  .frame{display:flex;min-height:calc(100vh - 20px);border:1px solid var(--line);margin:10px;}
+  @media (max-width:760px){.frame{flex-direction:column;margin:6px;}}
+
+  /* sheet index */
+  .spine{width:212px;flex-shrink:0;border-right:1px solid var(--line);display:flex;flex-direction:column;}
+  @media (max-width:760px){.spine{width:auto;flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);}}
+  .spine-head{padding:18px 16px 14px;border-bottom:1px solid var(--line);}
+  @media (max-width:760px){.spine-head{display:none;}}
+  .mark{font-size:11px;letter-spacing:.06em;color:var(--ink-soft);text-transform:uppercase;}
+  .spine-head h1{font-size:18px;line-height:1.25;margin-top:4px;}
+  .sheet-btn{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;background:none;border:none;
+    border-bottom:1px solid var(--line);padding:13px 16px;cursor:pointer;color:var(--ink-soft);}
+  @media (max-width:760px){.sheet-btn{border-bottom:none;border-right:1px solid var(--line);white-space:nowrap;width:auto;}}
+  .sheet-btn .num{font-variant-numeric:tabular-nums;font-size:12px;}
+  .sheet-btn .name{font-size:13.5px;font-weight:500;}
+  .sheet-btn .sw{width:8px;height:8px;border-radius:50%;flex-shrink:0;align-self:center;}
+  .sheet-btn[aria-current="true"]{background:var(--paper-2);color:var(--ink);}
+  .sheet-btn:focus-visible{outline:2px solid var(--political);outline-offset:-2px;}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .titleblock{display:flex;justify-content:space-between;align-items:flex-end;padding:16px 28px;
+    border-bottom:1px solid var(--line);gap:16px;flex-wrap:wrap;}
+  .titleblock .sheetname{font-family:var(--serif);font-size:22px;margin-top:2px;}
+  .titleblock .sheetno{font-size:12px;color:var(--ink-soft);text-align:right;font-variant-numeric:tabular-nums;}
+  .content{padding:22px 28px 56px;min-width:0;}
+  @media (max-width:760px){.titleblock,.content{padding-left:16px;padding-right:16px;}}
+
+  .crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;}
+  .crumbs button{background:none;border:none;color:var(--political);cursor:pointer;padding:2px 0;font-size:12.5px;}
+  .crumbs button:hover{text-decoration:underline;}
+  .crumbs .cur{color:var(--ink);font-weight:600;}
+  .crumbs .up{margin-left:auto;border:1px solid var(--line);padding:4px 10px;color:var(--ink-soft);}
+  .intro{font-size:15px;color:var(--ink-soft);margin-bottom:20px;}
+  .intro.lede{font-family:var(--serif);font-size:21px;color:var(--ink);max-width:36ch;}
+
+  /* the sheet: tiles + off-sheet rail + wires */
+  .map{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:34px;align-items:start;}
+  .map.root{grid-template-columns:minmax(0,1fr);}
+  @media (max-width:900px){.map{grid-template-columns:minmax(0,1fr);}}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:30px;position:relative;z-index:1;}
+  @media (max-width:520px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;}}
+  .tiles.zoom{animation:zoomin .32s ease-out;}
+  @keyframes zoomin{from{opacity:.35;transform:scale(.96);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){.tiles.zoom{animation:none;}}
+
+  .tile{position:relative;aspect-ratio:1/1;min-width:0;display:flex;flex-direction:column;gap:6px;text-align:left;
+    background:var(--paper);border:1px solid var(--line);padding:14px 15px;cursor:pointer;transition:border-color .15s,background .15s;}
+  .tile:hover{background:var(--paper-2);}
+  .tile:focus-visible{outline:2px solid var(--political);outline-offset:2px;}
+  .tile .bar{height:4px;width:34px;flex-shrink:0;}
+  .tile .no{font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;display:flex;justify-content:space-between;gap:8px;}
+  .tile .t{font-family:var(--serif);font-size:17px;line-height:1.2;font-weight:600;}
+  .tile.d0 .t{font-size:20px;}
+  .tile .q{font-size:12.5px;color:var(--ink-soft);line-height:1.4;}
+  .tile .foot{margin-top:auto;font-size:11.5px;color:var(--ink-soft);}
+  .tile ul{margin:2px 0 0;padding:0;list-style:none;font-size:12px;color:var(--ink-soft);}
+  .tile li{padding:3px 0;border-top:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tile .open{position:absolute;right:12px;bottom:10px;font-size:12px;color:var(--ink-soft);}
+  .tile.leaf .t{font-size:15.5px;}
+  .tile.leaf .q{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+  .tile.linked{border-color:var(--ink-soft);}
+  .tile.hot{border-color:var(--ink);}
+  .tile[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--paper-2);}
+  .tile.pending{border-style:dashed;}
+
+  .rail{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;}
+  .rail .mark{margin-bottom:2px;}
+  .rail .none{font-size:12px;color:var(--ink-soft);font-style:italic;}
+  .port{display:grid;grid-template-columns:4px 1fr auto;gap:10px;align-items:center;text-align:left;background:var(--paper);
+    border:1px solid var(--line);padding:9px 10px 9px 0;cursor:pointer;}
+  .port:hover,.port.hot{border-color:var(--ink);}
+  .port:focus-visible{outline:2px solid var(--political);outline-offset:2px;}
+  .port .sw{align-self:stretch;}
+  .port .pn{font-size:11px;color:var(--ink-soft);display:block;font-variant-numeric:tabular-nums;}
+  .port .pt{font-size:13px;font-weight:500;}
+  .port .w{font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+
+  svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:visible;}
+  .wire{fill:none;stroke:var(--ink-soft);opacity:.42;transition:opacity .15s;}
+  .wire.hot{opacity:1;}
+  .wires.focus .wire:not(.hot){opacity:.07;}
+  .wire-end{stroke:none;}
+  .wlabel{font-family:var(--sans);font-size:10.5px;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:4px;}
+  .wires.focus .wlabel:not(.hot){opacity:.1;}
+
+  /* status chips */
+  .chip{display:inline-block;font-size:10.5px;letter-spacing:.02em;padding:2px 7px;border:1px solid var(--line);color:var(--ink-soft);white-space:nowrap;}
+  .chip[data-s="verified"]{color:var(--ink);border-color:var(--ink-soft);}
+  .chip[data-s="secondary"]{border-style:dotted;border-color:var(--ink-soft);}
+  .chip[data-s="estimated"]{color:var(--financial);border-color:var(--financial);}
+  .chip[data-s="unresolved"],.chip[data-s="nolink"]{color:var(--flag);border-color:var(--flag);}
+  .chip[data-s="pending"]{border-style:dashed;font-style:italic;}
+  /* legal status: what a court or agency actually decided */
+  .chip.lg{font-weight:600;background:var(--paper-2);}
+  .chip.lg[data-lg="conviction"],.chip.lg[data-lg="judgment"]{color:var(--paper);background:var(--ink);border-color:var(--ink);}
+  .chip.lg[data-lg="pending"]{color:var(--flag);border:1px dashed var(--flag);background:none;}
+  .chip.lg[data-lg="press"]{border-style:dotted;}
+  .tile .foot{display:flex;flex-wrap:wrap;gap:4px;}
+  .foot-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+
+  /* notes panel */
+  .notes{margin-top:40px;border-top:1px solid var(--line);padding-top:22px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:34px;}
+  @media (max-width:760px){.notes{grid-template-columns:minmax(0,1fr);}}
+  .notes h2{font-size:21px;margin:4px 0 6px;}
+  .notes .role{font-size:13px;color:var(--ink-soft);margin-bottom:12px;}
+  .notes .body{font-size:14px;}
+  .notes h3{font-family:var(--sans);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin:0 0 8px;}
+  .srcs{list-style:none;margin:0 0 20px;padding:0;}
+  .srcs li{padding:6px 0;border-top:1px solid var(--line);font-size:13px;}
+  .srcs li:first-child{border-top:none;}
+  .srcs a::after{content:" ↗";font-size:11px;}
+  .conns{display:flex;flex-direction:column;gap:6px;}
+  .conn{display:grid;grid-template-columns:8px auto 1fr;gap:10px;align-items:center;text-align:left;background:none;border:1px solid var(--line);padding:7px 10px;cursor:pointer;font-size:13px;}
+  .conn:hover{border-color:var(--ink);}
+  .conn .sw{width:8px;height:8px;border-radius:50%;}
+  .conn .cn{font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .legend{display:grid;gap:8px;font-size:12.5px;color:var(--ink-soft);}
+  .legend div{display:flex;gap:10px;align-items:center;}
+  .legend svg{flex-shrink:0;}
+  .empty{font-size:13px;color:var(--ink-soft);font-style:italic;}
+</style>
+
+</head>
+<body>
+<div class="frame">
+  <nav class="spine" aria-label="Sheet index">
+    <div class="spine-head">
+      <div class="mark">Sheet index</div>
+      <h1>Angels Knoll<br>Site Map</h1>
+    </div>
+    <div id="spine" style="display:contents"></div>
+  </nav>
+
+  <div class="main">
+    <div class="titleblock">
+      <div>
+        <div class="mark">Angels Knoll — 361 S. Hill St, Downtown LA · Parcel Y-1</div>
+        <div class="sheetname" id="sheetname">Site Map</div>
+      </div>
+      <div class="sheetno" id="sheetno">A0.00</div>
+    </div>
+
+    <div class="content">
+      <div class="crumbs" id="crumbs"></div>
+      <p class="intro" id="intro"></p>
+      <div class="map" id="map">
+        <div class="tiles" id="tiles"></div>
+        <aside class="rail" id="rail" aria-label="Connections to other sheets"></aside>
+        <svg class="wires" id="wires" aria-hidden="true"></svg>
+      </div>
+      <section class="notes" id="notes" aria-live="polite"></section>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- sources ---------- */
+const U = {
+  eir:["LA City Planning — Angels Landing EIR case page","https://planning.lacity.gov/development-services/eir/angels-landing-project-0"],
+  ab204:["AB 204 legislative analysis","https://ahcd.assembly.ca.gov/sites/ahcd.assembly.ca.gov/files/AB204_ODonnell_ABPCA.pdf"],
+  hcd:["California HCD — 2026 State Income Limits","https://www.hcd.ca.gov/sites/default/files/docs/grants-and-funding/HCD-Income%20Limits-Filing-2026.pdf"],
+  ag:["California Attorney General — Angel Stadium settlement","https://www.oag.ca.gov/news/press-releases/attorney-general-bonta-calls-anaheim-city-council-approve-proposed-stipulated"],
+  moca:["MOCA — Board of Trustees","https://www.moca.org/about/board"],
+  f990:["MOCA — Form 990 (2024)","https://www.moca.org/storage/app/media/Financials/MOCA%202024%20FORM%20990%20-%20PDC.pdf"],
+  bisnow:["Bisnow — site could be headed to auction","https://www.bisnow.com/los-angeles/news/construction-development/downtowns-former-angels-landing-site-could-be-on-the-auction-block-soon-132018"],
+  urbanize:["Urbanize LA — CRA/LA puts the site up for grabs","https://la.urbanize.city/post/crala-putting-angels-landing-and-bethune-library-sites-grabs"],
+  goldman:["CourtListener — full opinion, 61 Cal.2d 21","https://www.courtlistener.com/opinion/1285874/in-re-redevelopment-plan-for-bunker-hill-v-goldman/"],
+  wAL:["Wikipedia — Angels Landing","https://en.wikipedia.org/wiki/Angels_Landing_(Los_Angeles)"],
+  wBH:["Wikipedia — Bunker Hill, Los Angeles","https://en.wikipedia.org/wiki/Bunker_Hill,_Los_Angeles"],
+  wGA:["Wikipedia — Grand Avenue Project","https://en.wikipedia.org/wiki/Grand_Avenue_Project"],
+  conserv:["LA Conservancy — Angels Flight","https://www.laconservancy.org/learn/historic-places/angels-flight/"],
+  ruling:["Tentative ruling, LASC No. 24STCV32173 (Mar 11, 2025)","https://rulings.law/rulings/judge-richard-l-fruin/24stcv32173-2025-03-11.html"],
+  claridge:["TPC Angels Landing DTLA v. Claridge — NY order (2022)","https://www.casemine.com/judgement/us/62b53facb50db94eeedcdf9e"],
+  matos:["CourtListener — Cal. Redevelopment Assn. v. Matosantos","https://www.courtlistener.com/opinion/5811601/california-redevelopment-assn-v-matosantos/"],
+  praport:["CRA report on Praport settlement (City Clerk, 2006)","https://cityclerk.lacity.org/onlinedocs/2006/06-1283_rpt_cra_6-1-06.pdf"],
+  ntsb01:["NTSB Railroad Accident Report RAR-03/03","https://www.ntsb.gov/investigations/AccidentReports/Reports/RAR0303.pdf"],
+  ntsb13:["NTSB Railroad Accident Brief RAB-14/02","https://www.ntsb.gov/investigations/AccidentReports/Reports/RAB1402.pdf"],
+  ceqa:["CEQAnet — SCH 2019039164","https://ceqanet.lci.ca.gov/2019039164/3"],
+  urb22:["Urbanize LA — officials sign Angels Landing (2022)","https://la.urbanize.city/post/la-city-officials-sign-massive-angels-landing-development"],
+  res2502:["CRA/LA Governing Board, Oct 24, 2025 — Item 5 (Resolution 25-02)","https://crala.org/internet-site/Meetings/Board_Agenda_2025/Oct_24_2025_Item_5.pdf"],
+  gbag:["CRA/LA Governing Board agenda, Aug 26, 2026","https://crala.org/internet-site/Meetings/Board_Agenda_2026/A08-26-26_GB_Special_Meeting.pdf"],
+  lacob:["LA County — composition of consolidated oversight boards","https://lacob.lacounty.gov/home/composition-of-consolidated-oversight-boards/"],
+  lacobag:["Third District Consolidated Oversight Board agenda, Sept 8, 2026","https://crala.org/internet-site/Meetings/Board_Agenda_2026/A09-08-26_LACOB3_Regular_Agenda.pdf"],
+  plum:["City Clerk — Council committee assignments (Aug 28, 2026)","https://cityclerk.lacity.org/onlinedocs/clk/CommitteeAssignments.pdf"],
+  cd14:["Wikipedia — LA's 14th City Council district","https://en.wikipedia.org/wiki/Los_Angeles%27s_14th_City_Council_district"],
+  solis:["Wave — Solis to chair Board of Supervisors","https://wavepublication.com/hilda-solis-to-chair-board-of-supervisors-during-her-final-year/"],
+  laist:["LAist — 2026 Supervisor District 1 results","https://laist.com/news/politics/voter-guides/2026-election-california-primary-la-live-results-la-county-supervisor-district-1-and-3"],
+  patch:["Patch — Bass appointed Metro board chair FY2026–27","https://patch.com/california/los-angeles/bass-appointed-metro-board-chair-fiscal-year-2026-27"],
+  abc7:["ABC7 — 2026 primary results","https://abc7.com/live-updates/california-primary-election-2026-voters-decide-key-races-governor-los-angeles-mayor-congressional-districts/19213908/entry/19224615/"],
+  ceqa4:["CEQAnet — Angels Landing Final EIR summary","https://ceqanet.lci.ca.gov/2019039164/4"],
+  w2cal:["Wikipedia — 2Cal","https://en.wikipedia.org/wiki/2Cal"],
+  broad:["The Broad — expansion","https://www.thebroad.org/broad-expansion"],
+  abbott:["MOCA — Jonathan Abbott named CEO & Director","https://www.moca.org/moca-names-jonathan-abbott-ceo-maurice-marciano-director"],
+  mocamem:["MOCA — membership page (revenue mix)","https://www.moca.org/membership"],
+  propub:["ProPublica — MOCA Form 990 summaries","https://projects.propublica.org/nonprofits/organizations/953433820"],
+  urb16:["Urbanize LA — City to seek developer for Angels Knoll (2016)","https://la.urbanize.city/post/city-seek-developer-angels-knoll-site"],
+  wCP:["Wikipedia — California Plaza","https://en.wikipedia.org/wiki/California_Plaza"],
+  chp:["California Housing Partnership — LA County 2026 Affordable Housing Needs Report","https://calhousingpartnership.org/wp-content/uploads/2026/05/Los-Angeles_Housing_Report_2026.pdf"],
+  asla:["Urbanize LA — ASLA contest reimagines Angels Knoll","https://la.urbanize.city/post/asla-design-contest-reimagines-dtlas-shuttered-angels-knoll"],
+  eso:["Esotouric — campaign to reopen Angels Knoll","https://esotouric.substack.com/p/angelsknoll"],
+  huizar:["US Attorney — Huizar sentenced to 13 years","https://www.justice.gov/usao-cdca/pr/former-los-angeles-politician-jose-huizar-sentenced-13-years-federal-prison"],
+  huizarind:["US Attorney — superseding indictment in Huizar RICO case","https://www.justice.gov/usao-cdca/pr/new-indictment-rico-case-against-former-la-city-councilman-jose-huizar-adds-5"],
+  chan:["US Attorney — former Deputy Mayor Chan sentenced","https://www.justice.gov/usao-cdca/pr/former-los-angeles-deputy-mayor-sentenced-12-years-prison-racketeering-conspiracy"],
+  carmel:["US Attorney — developer pays $1.2M (Carmel Partners NPA)","https://www.justice.gov/usao-cdca/pr/developer-agrees-pay-12-million-resolve-criminal-probe-executive-s-relationship-ex-la"],
+  price:["LA County DA — Price ordered to stand trial","https://da.lacounty.gov/media/news/curren-price-ordered-second-la-county-superior-court-judge-stand-trial-12-public"],
+  englander:["US Attorney — Englander sentenced","https://www.justice.gov/usao-cdca/pr/former-la-city-councilman-mitch-englander-ordered-serve-14-months-federal-prison"],
+  mrt:["Courthouse News — Ninth Circuit upholds Ridley-Thomas conviction","https://www.courthousenews.com/ninth-circuit-upholds-bribery-conviction-of-longtime-la-politician/"],
+  deleon:["LA Times (via Yahoo) — developers refuse to work with de León","https://news.yahoo.com/black-developers-refuse-le-n-070108623.html"],
+  westend:["West End Museum — urban renewal on Bunker Hill","https://thewestendmuseum.org/history/topic/urban-renewal/the-angels-flight-from-the-hill-urban-renewal-in-l-a-s-bunker-hill-neighborhood/"],
+  rhtf:["City Clerk — CRA report on Bunker Hill housing funds (2011)","https://cityclerk.lacity.org/onlinedocs/2009/09-0875_rpt_cra_03-17-11.pdf"],
+  angelus:["Angelus Plaza — who we are","https://angelusplaza.org/who-we-are/"],
+  emerson:["Related — The Emerson","https://www.related.com/our-company/properties/emerson"],
+  ladnGA:["LA Downtown News — new plan for Grand Avenue","https://www.ladowntownnews.com/news/developer-unveils-new-plan-for-grand-avenue/article_73c455f8-61a7-11e2-8810-0019bb2963f4.html"],
+  hillside:["LAist — Hillside Villa","https://laist.com/news/housing-homelessness/hillside-villa-chinatown-apartment-affordable-housing-eminent-domain-city-council-los-angeles-tom-botz-tenants-landlord"],
+  lalliance:["Civil Rights Litigation Clearinghouse — LA Alliance v. City","https://clearinghouse.net/case/43959/"],
+  laistLA:["LAist — amended LA Alliance agreement (2026)","https://laist.com/news/housing-homelessness/la-agrees-to-boost-housing-and-shelter-options-for-people-experiencing-homelessness"],
+  am:["LAist — Alvarez & Marsal homelessness audit","https://laist.com/news/housing-homelessness/audit-homeless-carter-lahsa"],
+  hhh:["LA City Controller — The Problems and Progress of Prop. HHH","https://controller.lacity.gov/audits/problems-and-progress-of-prop-hhh"],
+  lahsa:["LA County Auditor-Controller — LAHSA review (May 2026)","https://file.lacounty.gov/SDSInter/auditor/cmr/1209306_2026-05-21LAHSA-FinancialandOperationalProcessReview_March3_2026_BoardAgendaItem79-A_.pdf"],
+  ula:["LAist — Measure ULA and the state ballot fight","https://laist.com/news/housing-homelessness/los-angeles-city-mansion-tax-measure-ula-transfer-state-sacramento-ab-736-howard-jarvis-novemeber-ballot-measure"],
+  hcdhe:["HCD letter to City of LA on housing element rezoning (Nov 2024)","https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/HAU/los-angeles-he-ta-11182024.pdf"],
+  hcdex:["HCD exempt-surplus review, former CRA/LA parcels (July 2024)","https://hcd.ca.gov/sites/default/files/docs/planning-and-community/HAU/los-angeles-crla-exempt-review-072524.pdf"],
+  co:["Commercial Observer — Angels Landing and the Surplus Land Act","https://commercialobserver.com/2025/10/la-angels-landing-surplus-land-development/"],
+  cf14:["Council File 14-0425-S4 — 361 S. Hill St (Parcel Y-1)","https://cityclerk.lacity.org/lacityclerkconnect/index.cfm?fa=ccfi.viewrecord&cfnumber=14-0425-S4"],
+  cf17a:["Council action, Mar 21, 2017 — solicit developers","https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_CA_03-21-2017.pdf"],
+  cf17:["Council action, Dec 13, 2017 — developer selected","https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_CA_12-16-2017.pdf"],
+  cf21:["Council action, May 18, 2021 — option amendment","https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_CAF_5-18-21.pdf"],
+  cf22:["Council action, Jul 1, 2022 — DDA referred back","https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_CAF_7-1-22.pdf"],
+  cla23:["CLA supplemental report, Feb 8, 2023","https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_rpt_cla_02-08-23.pdf"],
+  cf24:["Council action, Sept 27, 2024 — seek option extension","https://cityclerk.lacity.org/onlinedocs/2014/14-0425-S4_caf_9-27-24.pdf"],
+  cf24m:["De León–Park motion, Sept 2024","https://cityclerk.lacity.org/onlinedocs/2014/14-0425-s4_misc_9-23-24.pdf"],
+  cfpar:["CF 14-0425 Attachment A — future development properties (2014)","https://cityclerk.lacity.org/onlinedocs/2014/14-0425_MISC_12-08-14.pdf"],
+  cfbid:["Council File 22-0795 — BID upkeep contract for Y-1","https://cityclerk.lacity.org/lacityclerkconnect/index.cfm?fa=ccfi.viewrecord&cfnumber=22-0795"],
+  cf23:["Council File 23-1068 — City Attorney closed sessions","https://cityclerk.lacity.org/lacityclerkconnect/index.cfm?fa=ccfi.viewrecord&cfnumber=23-1068"],
+  vtt:["City Planning — VTT-82936-CN","https://planning.lacity.gov/pdiscaseinfo/Search/casenumber/VTT-82936-CN"],
+  za:["City Planning — ZA-2018-3271-MCUP-CUX-SPPA-SPP","https://planning.lacity.gov/pdiscaseinfo/Search/casenumber/ZA-2018-3271-MCUP-CUX-SPPA-SPP"],
+  da:["City Planning — CPC-2018-3272-DA","https://planning.lacity.gov/pdiscaseinfo/Search/casenumber/CPC-2018-3272-DA"],
+  noa:["Notice of joint public hearing, June 23, 2021","https://planning.lacity.gov/eir/AngelsLanding/feir/files/NOA.pdf"],
+  hcdnoa:["HCD — Surplus Land Act notices of availability (data.ca.gov)","https://data.ca.gov/dataset/surplus-land-act-notices-of-availability-received"],
+  bid26:["CRA/LA Governing Board, Aug 26, 2026 — Item 3","http://www.crala.org/internet-site/Meetings/Board_Agenda_2026/Aug_26_2026_Item_3.pdf"],
+  min25:["CRA/LA minutes of Oct 24, 2025 (approved Dec 5, 2025)","http://www.crala.org/internet-site/Meetings/Board_Agenda_2025/Dec_5_2025_Item_2.pdf"],
+  cla20:["CLA progress letter to CRA/LA, Aug 27, 2020","https://file.lacounty.gov/SDSInter/bos/supdocs/151363.pdf"]
+};
+const PENDING = "Research in progress. This tile stays empty of claims until each item is checked against a court record, official filing, or agency finding, and labeled as an allegation, settlement, official finding, or conviction.";
+
+/* ---------- the tree: topic → group → item ---------- */
+/* s = status: verified | secondary | estimated | unresolved | nolink | pending
+   ln = ids of connected items anywhere in the tree (drawn as wires) */
+const TREE = [
+{ id:"land", t:"Land & Approval", cat:"political", q:"Who decides what happens to the parcel, and who approves what gets built on it?", kids:[
+  { id:"dispo", t:"Land disposition", q:"Who can sell the parcel, and to whom.", kids:[
+    { id:"sla", t:"Surplus Land Act trigger", r:"The City's option expired Sept 30, 2025", s:"secondary", src:["urbanize","bisnow"],
+      d:"When the City's option lapsed, the state Surplus Land Act required CRA/LA to offer the site to affordable-housing sponsors before any other kind of sale. Bisnow reports CRA/LA voted in late October 2025 to declare it surplus, opening a 60-day offer period before any auction.", ln:["ob","sponsor","hcd","expiry"] },
+    { id:"res2502", t:"Resolution 25-02", r:"CRA/LA declares the parcel surplus · Oct 24, 2025 · 3–0", s:"verified", src:["res2502","min25"],
+      d:"Directs a notice of availability. Affordable developers get 60 days to express interest; if any do, CRA/LA must negotiate in good faith for at least 90 days. If the land becomes housing, a covenant requires at least 25% affordable units. No public comment was made. The CEO reported talks between the City's legislative analyst and Councilmember Jurado about the site.", ln:["sla","gb","sponsor","hcd","jurado"] },
+    { id:"hcdnoa", t:"No notice filed with HCD yet", r:"State dataset updated Sept 25, 2026", s:"verified", src:["hcdnoa","bid26"],
+      d:"HCD's dataset of Surplus Land Act notices has no entry for this parcel, although CRA/LA filed notices for two other sites in 2026. In August 2026 CRA/LA was still \"preparing for disposition,\" so no sale or auction appears to have happened.", ln:["res2502","sponsor","open"] },
+    { id:"ob", t:"Consolidated Oversight Board", r:"LA County Third District board · 7 members", s:"verified", src:["lacob","lacobag"],
+      d:"Since July 1, 2018 CRA/LA has had no oversight board of its own. It falls under the LA County Third Supervisorial District Consolidated Oversight Board, which also covers Agoura Hills, San Fernando, Santa Monica, West Hollywood and the County CDC. Members: Steve Koffroth (Chair), Paul J. Silvern (Vice Chair), John M. Erickson, Jeanette L. Gordon, Catherine Houwen, Robert Moran, Timothy S. Rosnick.", ln:["dof","gb","open"] },
+    { id:"gb", t:"CRA/LA Governing Board", r:"3 Governor-appointed members · CEO Dan Kahn", s:"verified", src:["gbag","ab204"],
+      d:"Los Angeles declined to serve as its own successor agency when redevelopment agencies were dissolved. The Governor appoints this board to run CRA/LA as a designated local authority. Members: Mee Semcken (Chair), Ed P. Reyes (Vice Chair), Kelli Bernard.", ln:["ab204doc","dtla"] },
+    { id:"dof", t:"CA Dept. of Finance", r:"Reviews successor-agency actions", s:"verified", src:["res2502"],
+      d:"Approved CRA/LA's Long Range Property Management Plan on Oct 7, 2014, which classified this parcel (Asset ID 168) as \"Retained for Future Development.\"", ln:["hcd"] },
+    { id:"hcd", t:"California HCD", r:"Sets affordability rules; oversees Surplus Land Act compliance", s:"verified", src:["hcd"],
+      d:"Publishes the annual income limits that define \"affordable\" on this site, and can issue a Notice of Violation if a Surplus Land Act disposition doesn't genuinely serve affordable housing, as it did at Angel Stadium.", ln:["ag","ami","hcddoc","slaenf"] },
+    { id:"ag", t:"California Attorney General", r:"Rob Bonta · enforces the Surplus Land Act", s:"verified", src:["ag"],
+      d:"The Angel Stadium enforcement action is the working precedent for what happens if this site's affordable-housing commitment is under-delivered.", ln:["stadium","slaenf"] },
+    { id:"open", t:"Disposition path unresolved", r:"Negotiated sale to a sponsor, or public auction", s:"unresolved", src:["bisnow"],
+      d:"The site is mid-disposition. Until it resolves, any financial model has to fork into a sponsor-negotiated branch and an open-auction branch.", ln:["sponsor","alp","val"] }
+  ]},
+  { id:"build", t:"Building approval", q:"What it takes to build, once someone controls the land.", kids:[
+    { id:"cpc", t:"LA City Planning Commission", r:"Never heard Angels Landing", s:"verified", src:["da"],
+      d:"The Commission would have heard the Development Agreement (CPC-2018-3272-DA), but it was withdrawn on Feb 3, 2022 with no hearing. The project's entitlements came from staff-level decisions instead. A new proposal needing a zone change or agreement would go through here.", ln:["plum","da","jurado"] },
+    { id:"plum", t:"PLUM Committee", r:"Chair Blumenfield · Vice Chair Raman", s:"verified", src:["plum"],
+      d:"Land-use appeals and legislative actions pass through this committee before the full Council. Members effective Aug 31, 2026: Bob Blumenfield (Chair), Nithya Raman (Vice Chair), Ysabel Jurado, John Lee, Adrin Nazarian. Some websites still list an older roster. No PLUM action on this parcel was found; the site's deals went through the Economic Development committee instead.", ln:["cpc","jurado"] },
+    { id:"portal", t:"Metro Pershing Square portal", r:"Existing station entrance that must be retained", s:"verified", src:["ceqa4","eir"],
+      d:"Any public route through the site has to coordinate with Metro's easement, which adds cost and schedule risk and sets a security boundary the cultural program must design around.", ln:["metro","eir","far"] },
+    { id:"metro", t:"LA Metro Board", r:"Bass chairs FY2026–27 (from July 1, 2026)", s:"secondary", src:["patch"],
+      d:"Voted unanimously May 28, 2026; First Vice Chair Kathryn Barger, Second Vice Chair Tim Sandoval. Construction affecting the Pershing Square portal likely needs Metro coordination, though no Metro easement document or board action on this parcel has been found.", ln:["bass","portal"] }
+  ]},
+  { id:"title", t:"Parcel & title", q:"Who holds pieces of, or rights over, the land itself.", kids:[
+    { id:"dtla", t:"DTLA Alliance", r:"Maintains and secures the parcel under CRA/LA contract", s:"verified", src:["bid26","cfbid"],
+      d:"The Downtown Center BID's management corporation keeps the site: power-washing the plaza and stairs, locking the stairwell gates, security patrols. CRA/LA extended the contract to June 30, 2027 (total $197,000) on Aug 26, 2026. An earlier City contract ran under Council File 22-0795.", ln:["cfbid"] },
+    { id:"twocal", t:"2 Cal Land (LA) Owner, LLC", r:"Owner of Two California Plaza · air rights over part of the lot", s:"verified", src:["res2502"],
+      d:"Owns an air-rights portion of Lot 5 above 17 ft over Olive Street (2016 deed). Reciprocal easements from a 1983 agreement with Bunker Hill Associates also affect the parcel.", ln:["bha"] },
+    { id:"afdeed", t:"Angels Flight deed carve-out", r:"Part of Lot 5 deeded Dec 22, 2017", s:"verified", src:["res2502"],
+      d:"A portion of the lot was deeded to the Angels Flight Railway Foundation and is excluded from the surplus parcel.", ln:["afrf"] }
+  ]},
+  { id:"officials", t:"Elected officials", q:"The people whose seats touch this parcel.", kids:[
+    { id:"bass", t:"Karen Bass", r:"Mayor · Metro board chair · MOCA ex-officio trustee", s:"verified", src:["moca","abc7"],
+      d:"Holds three concurrent seats over one parcel: city land-use power, transit governance, and a fiduciary vote on MOCA's board. She faces Nithya Raman in the Nov 3, 2026 mayoral runoff; the Metro and MOCA seats follow whoever is mayor.", ln:["mocab","hd","metro"] },
+    { id:"hd", t:"Marqueece Harris-Dawson", r:"Council President · MOCA ex-officio trustee", s:"verified", src:["moca"],
+      d:"A second point of overlap between City Hall and MOCA's governance.", ln:["bass","mocab"] },
+    { id:"jurado", t:"Ysabel Jurado", r:"Councilmember, CD14 · sits on PLUM", s:"secondary", src:["urbanize","cd14"],
+      d:"District representative for the parcel, sworn in Dec 9, 2024. Also Vice Chair of Housing and Chair of Homelessness & Health. A parcel-level district lookup hasn't been attached yet.", ln:["cpc"] },
+    { id:"solis", t:"Hilda Solis", r:"LA County Supervisor, District 1 · Board Chair", s:"secondary", src:["solis","laist"],
+      d:"Named chair of the Board of Supervisors Dec 2, 2025, her final term. María Elena Durazo won the District 1 seat outright in the June 2, 2026 primary and succeeds her in December 2026.", ln:[] }
+  ]}
+]},
+{ id:"money", t:"Money & Risk", cat:"financial", q:"Who provides the money, who bears the risk, and what the land is worth.", kids:[
+  { id:"devs", t:"Developers & bidders", q:"Who has tried, or is trying, to build here.", kids:[
+    { id:"alp", t:"Angels Landing Partners", r:"MacFarlane · Peebles · Claridge", s:"secondary", src:["bisnow","wAL"],
+      d:"The former developer. Its agreement was terminated in February 2024 and it sued the City. Peebles has described the site as a long-term land-banking opportunity.", ln:["sponsor","suit","terminated","approved"] },
+    { id:"sponsor", t:"Affordable-housing sponsor", r:"Not publicly named", s:"unresolved", src:["bisnow"],
+      d:"No source names any developer that answered CRA/LA's notice of availability, and no Governing Board agenda since October 2025 has a disposition item for this parcel. People quoted in press coverage are commentators, not bidders. What happened after the 60-day window is unknown.", ln:["alp"] },
+    { id:"related", t:"The Related Companies", r:"Master developer, Grand Avenue Project", s:"secondary", src:["wGA"],
+      d:"Selected by the Grand Avenue Authority. Separately bought CRA/LA-owned air rights near The Broad, a possible precedent for direct land deals. Not confirmed as a pathway for this site.", ln:["gaa","broad"] },
+    { id:"gaa", t:"Grand Avenue Authority", r:"Joint powers authority of former CRA/LA and LA County", s:"secondary", src:["wGA"],
+      d:"Governs the neighboring Grand Avenue redevelopment (Disney Hall, Grand Park, The Grand LA). A local precedent for how this district's public land gets developed.", ln:["related"] }
+  ]},
+  { id:"value", t:"Value & capacity", q:"How big it can be, and what it's worth.", kids:[
+    { id:"far", t:"Entitlement ceiling", r:"13:1 FAR · ~1,269,150 sq ft · 3 parking levels", s:"verified", src:["eir"],
+      d:"The legal ceiling for a combined housing and cultural program, independent of what a restricted-rent model can actually afford.", ln:["eir","val"] },
+    { id:"val", t:"Valuation history", r:"~$20M (2015) → $50M (2021)", s:"estimated", src:["wAL"],
+      d:"The $50M figure was prepared for the failed market-rate deal. A housing-restricted valuation would likely land well below it, because rent caps limit supportable debt.", ln:["open","alp"] },
+    { id:"ami", t:"2026 LA County AMI", r:"$108,100 for a 4-person household", s:"verified", src:["hcd"],
+      d:"Up from $106,500 in 2025. Restricted rents on this site are set from this figure, not from what the site costs to build.", ln:["hcddoc","tiers"] },
+    { id:"tiers", t:"Low = Moderate anomaly", r:"Two income tiers numerically identical in 2026", s:"verified", src:["hcd"],
+      d:"A documented 2026 administrative override: HUD's lower-income formula exceeded HCD's standard moderate calculation. It directly affects unit-mix assumptions.", ln:["ami","hcddoc"] }
+  ]},
+  { id:"culturemoney", t:"Cultural money", q:"How the cultural side is funded.", kids:[
+    { id:"mocai", t:"MOCA (institution)", r:"~84% philanthropy · 11% earned · 5% endowment (self-reported)", s:"verified", src:["mocamem","propub"],
+      d:"The 84/11/5 split is MOCA's own figure for an unstated year. Its Form 990 for the year ending June 2025 shows $29.55M in revenue, about 75% from contributions. Either way, any capital contribution would depend on board fundraising, so a financial model has to treat it as conditional.", ln:["mocab","abbott","bha","f990doc"] },
+    { id:"bha", t:"Bunker Hill Associates", r:"1980s California Plaza developer", s:"secondary", src:["wBH"],
+      d:"Received an 11-acre public parcel to build California Plaza's three towers, in exchange for financing MOCA's $23M Grand Avenue building. Built two of the three.", ln:["mwd","bargain","tower"] },
+    { id:"mwd", t:"Metropolitan Water District", r:"Intended tenant of the cancelled third tower", s:"secondary", src:["w2cal"],
+      d:"The planned 65-story tower on this parcel was to house MWD's permanent headquarters. MWD chose Union Station instead (reported April 1994; the original article hasn't been opened).", ln:["tower"] }
+  ]}
+]},
+{ id:"culture", t:"Culture & Value", cat:"cultural", q:"Who defines the cultural program and its public value?", kids:[
+  { id:"mocagov", t:"MOCA governance", q:"A board with political, artist and institutional seats.", kids:[
+    { id:"mocab", t:"MOCA Board of Trustees", r:"Chair Carolyn Clark Powers · Vice-Chairs López Alonso, Kohl", s:"verified", src:["moca"],
+      d:"The 2026–27 board mixes ex-officio political seats (the Mayor, the Council President, the Director) with artist trustees and patrons. Vice-Chairs are Eugenio López Alonso and Karyn Kohl.", ln:["artists","abbott"] },
+    { id:"artists", t:"Artist Trustees", r:"Kruger · Madani · McMillian · Quarles", s:"verified", src:["moca"],
+      d:"All four are listed as voting trustees. The tradition of artist seats dates to MOCA's 1979 founding; the board page itself doesn't use the label \"artist trustee.\"", ln:[] },
+    { id:"abbott", t:"Jonathan Abbott", r:"CEO & Maurice Marciano Director, from Sept 24, 2026", s:"verified", src:["abbott"],
+      d:"Named after an interim period led by Ann Goldstein (from Aug 2025), who stays on as advisor through November 2026. The Director holds an ex-officio board seat.", ln:[] },
+    { id:"bargain", t:"The unfinished bargain", r:"$23M museum for an 11-acre parcel", s:"secondary", src:["wBH"],
+      d:"MOCA's founding deal with this site was never completed: the third tower, on this parcel, was never built. A cultural program here can be framed as finishing that exchange.", ln:["tower","mocai"] }
+  ]},
+  { id:"neighbors", t:"Neighbors & stewards", q:"Institutions sharing the hillside and the street.", kids:[
+    { id:"afrf", t:"Angels Flight Railway Foundation", r:"Steward of the adjacent historic funicular", s:"verified", src:["conserv"],
+      d:"Angels Flight is LA Historic-Cultural Monument No. 4. The foundation supported the prior Angels Landing proposal in writing.", ln:["conserv","approved"] },
+    { id:"conserv", t:"LA Conservancy", r:"Historic preservation advocacy", s:"verified", src:["conserv"],
+      d:"Active on Angels Flight's landmark status and setting.", ln:[] },
+    { id:"broad", t:"The Broad", r:"Peer museum a few blocks away · expansion opens 2028", s:"verified", src:["broad"],
+      d:"Its expansion on Hope Street broke ground April 9, 2025 and topped out May 13, 2026. Part of the same downtown cultural-building boom as MOCA.", ln:["mocab"] }
+  ]},
+  { id:"voice", t:"Public voice", q:"Who has argued publicly for what the knoll should be.", kids:[
+    { id:"eso", t:"Reopen Angels Knoll campaign", r:"Esotouric", s:"secondary", src:["eso"],
+      d:"A public campaign asking the councilmember to reopen the closed Angels Knoll park.", ln:["jurado","park"] },
+    { id:"asla", t:"ASLA design competition, 2026", r:"Emerging Professionals brief: reimagine Angels Knoll", s:"secondary", src:["asla"],
+      d:"First place went to \"Folding Angel's Knoll\" by Yuehui Gong. The brief frames the site between Angels Flight and Grand Central Market.", ln:["park"] }
+  ]}
+]},
+{ id:"history", t:"Site History", cat:"history", q:"How the parcel got here, from clearance to auction.", kids:[
+  { id:"clearance", t:"Clearance, 1959–1964", q:"Bunker Hill is cleared, and the courts uphold it.", kids:[
+    { id:"plan", t:"Redevelopment plan upheld", r:"CA Supreme Court, Feb 27, 1964", s:"verified", src:["goldman"],
+      d:"Five property-owner and taxpayer suits challenged the blight finding and eminent-domain authority. The Court ruled for the agency on every count.", ln:["goldman","displaced"] },
+    { id:"displaced", t:"Residents displaced", r:"Estimates range from ~8,000 to 22,000 people", s:"secondary", src:["westend"],
+      d:"Sources count about 7,310 dwelling units cleared, and resident estimates vary widely. The earlier register's 6,000–8,000 figure isn't tied to a source. Cite a range and attribute it.", ln:["promise"] }
+  ]},
+  { id:"calplaza", t:"California Plaza era", q:"The museum is built; the tower is not.", kids:[
+    { id:"moca87", t:"MOCA's Grand Avenue building opens", r:"Arata Isozaki · opening date under review", s:"nolink", src:[],
+      d:"The museum built as the public-benefit half of the California Plaza deal. The earlier site gave 1987; confirm against MOCA's own history.", ln:["bargain","bha"] },
+    { id:"tower", t:"Third tower abandoned", r:"Early 1990s, after Two California Plaza opened in 1992", s:"secondary", src:["urb16","wCP"],
+      d:"Abandoned amid a downtown office slump. No source supports the earlier \"1987\" date. The cause was the real-estate cycle, not the slope.", ln:["mwd"] },
+    { id:"park", t:"Angels Knoll park", r:"Temporary CRA park on part of the site", s:"secondary", src:["urb16"],
+      d:"After the tower died, CRA turned part of the site into a temporary park, later closed.", ln:["days500"] },
+    { id:"days500", t:"(500) Days of Summer", r:"2009 · the knoll on film", s:"nolink", src:[],
+      d:"The film fixed the hillside park in public memory as a bench overlooking downtown.", ln:[] }
+  ]},
+  { id:"landing", t:"Angels Landing, 2018–2025", q:"A market-rate tower approved, then abandoned.", kids:[
+    { id:"option", t:"City takes an option on the land", r:"January 8, 2015", s:"verified", src:["cla23","cfpar"],
+      d:"The City and CRA/LA sign the Option Agreement that gave the City control of the parcel's future. It was extended several times and finally expired unexercised on Sept 30, 2025.", ln:["cfparent","expiry"] },
+    { id:"selected", t:"Council selects the developer", r:"December 13, 2017", s:"verified", src:["cf17"],
+      d:"Council adopts the committee report naming Angels Landing Partners as preferred developer; Mayor Garcetti approves it Dec 15. The search began with a March 2017 motion by Councilmembers Huizar and O'Farrell.", ln:["alp","cf14","hd"] },
+    { id:"ena", t:"Negotiating agreement signed", r:"March 28, 2018", s:"verified", src:["ruling","cla23"],
+      d:"The City and Angels Landing Partners sign the Exclusive Negotiating Agreement. Its termination terms are what the 2024 lawsuit turns on.", ln:["alp","suit"] },
+    { id:"approved", t:"Staff-level entitlements", r:"February 3, 2022 · not appealed", s:"verified", src:["vtt","za","urb22"],
+      d:"A tract map and zoning permits are approved by the Advisory Agency and Zoning Administrator, and the Development Agreement is withdrawn the same day. The Council never approved the development or sale agreements; in July 2022 they were sent back to committee. Earlier versions of this site said \"approved 2017\" and \"final City approvals 2022\"; both overstated it.", ln:["eir","vtt","da","cfdda"] },
+    { id:"terminated", t:"City terminates the agreement", r:"Notice Oct 12, 2023 · effective Feb 13, 2024", s:"verified", src:["ruling"],
+      d:"The City declared a default, saying a reshuffle of ownership among the partners after the Claridge dispute was a transfer that needed its consent.", ln:["claridge"] },
+    { id:"suitev", t:"Developer sues the City", r:"Filed Dec 6, 2024 · reported Jan 2025", s:"verified", src:["ruling"],
+      d:"Angels Landing Partners files suit in LA Superior Court after the City denied its government claim in June 2024.", ln:["suit"] },
+    { id:"expiry", t:"City's option expires", r:"September 30, 2025", s:"secondary", src:["urbanize"],
+      d:"The expiration triggers the Surplus Land Act process now under way.", ln:[] }
+  ]}
+]},
+{ id:"record", t:"Public Record", cat:"record", q:"The court opinions, filings and official documents behind every claim.", kids:[
+  { id:"courts", t:"Court documents", q:"Opinions and lawsuits tied to the site.", kids:[
+    { id:"goldman", t:"CRA v. Goldman (1964)", r:"61 Cal.2d 21 · CA Supreme Court", s:"verified", src:["goldman"],
+      d:"In re Redevelopment Plan for Bunker Hill. A validation action brought by the agency itself, with five suits consolidated as objectors.", ln:[] },
+    { id:"suit", t:"Angels Landing Partners v. City of LA", r:"LA Superior Court · No. 24STCV32173", s:"verified", src:["ruling","bisnow"],
+      d:"Breach-of-contract suit seeking about $20M in costs the agreement says the City owes if it terminates while the developer isn't in default. On March 11, 2025 the court let the contract claim proceed and dismissed two other claims with leave to amend. Reported as ongoing in November 2025; no later ruling found. One news report of a ruling that the termination was unlawful could not be confirmed.", ln:["alp"] },
+    { id:"claridge", t:"TPC Angels Landing v. Claridge", r:"NY Supreme Court · Index No. 652567/2021", s:"verified", src:["claridge"],
+      d:"Peebles' and MacFarlane's entities sued their minority partner Claridge over a missed capital contribution; Claridge's counterclaims were dismissed in June 2022. This partner dispute is what the City later cited as grounds for termination.", ln:["alp"] },
+    { id:"matos", t:"Cal. Redevelopment Assn. v. Matosantos", r:"53 Cal.4th 231 · CA Supreme Court, 2011", s:"verified", src:["matos"],
+      d:"Upheld the dissolution of redevelopment agencies. It is why the parcel sits with CRA/LA as a winding-down successor, and why its sale runs through the Oversight Board and Dept. of Finance.", ln:["gb","ob","dof"] },
+    { id:"praport", t:"Praport v. Community Redevelopment Agency", r:"LASC No. BC 247451 · settled 2006", s:"verified", src:["praport"],
+      d:"Suits over the fatal 2001 Angels Flight accident. The former CRA contributed $425,000 to the settlement, showing the agency carried liability for the railway it rebuilt next to this parcel.", ln:["ntsb01","afrf"] },
+    { id:"saje", t:"SAJE suit over the Bethune Library hotel", r:"2023 · the sister site declared surplus alongside this one", s:"secondary", src:["co"],
+      d:"Strategic Actions for a Just Economy challenged hotel entitlements on the former Bethune Library site, which CRA/LA later put through the same surplus process. No case number found.", ln:["res2502"] }
+  ]},
+  { id:"safety", t:"Angels Flight investigations", q:"Federal safety findings on the funicular beside the site.", kids:[
+    { id:"ntsb01", t:"2001 fatal collision", r:"NTSB report RAR-03/03", s:"located", src:["ntsb01"],
+      d:"A runaway car collided with the other, killing one passenger and injuring seven. The NTSB cited improper design and construction of the drive system.", ln:["afrf"] },
+    { id:"ntsb13", t:"2013 derailment", r:"NTSB brief RAB-14/02", s:"located", src:["ntsb13"],
+      d:"No injuries. The NTSB faulted management for bypassing the safety system and criticized the lack of a track-side walkway, which led to the walkway now running along the site's edge.", ln:["afrf"] }
+  ]},
+  { id:"gov", t:"Government documents", q:"Planning cases, legislation and state tables.", kids:[
+    { id:"eir", t:"Angels Landing EIR", r:"LA City Planning case page", s:"verified", src:["eir"],
+      d:"Sets the prior entitlement: 13:1 FAR, ~1,269,150 sq ft, three subterranean parking levels, and the retained Metro portal.", ln:[] },
+    { id:"ceqadoc", t:"State CEQA record", r:"SCH No. 2019039164 · APN 5149-010-951", s:"verified", src:["ceqa"],
+      d:"The state clearinghouse entry for the EIR. No CEQA lawsuit against the project was found, though that absence isn't confirmed.", ln:["eir"] },
+    { id:"ab204doc", t:"AB 204 analysis", r:"Assembly committee analysis", s:"verified", src:["ab204"],
+      d:"Documents the Oversight Board and Governing Board structure for CRA/LA.", ln:["ob"] },
+    { id:"hcddoc", t:"HCD 2026 Income Limits", r:"State income-limit filing", s:"verified", src:["hcd"],
+      d:"Source of the 2026 AMI and the Low = Moderate override.", ln:[] },
+    { id:"hearing", t:"Joint public hearing", r:"June 23, 2021 · Hearing Officer & Deputy Advisory Agency", s:"verified", src:["noa"],
+      d:"The only public hearing found on the project's entitlements, held virtually after the Final EIR was released in May 2021.", ln:["eir","vtt"] },
+    { id:"vtt", t:"VTT-82936-CN", r:"Tract map · 1 ground lot + 29 airspace lots", s:"verified", src:["vtt"],
+      d:"Approved Feb 3, 2022, with about 334,000 cubic yards of soil export. Not appealed.", ln:["za"] },
+    { id:"za", t:"ZA-2018-3271", r:"Alcohol, entertainment and Bunker Hill Specific Plan permits", s:"verified", src:["za"],
+      d:"Approved with conditions Feb 3, 2022. Not appealed.", ln:[] },
+    { id:"da", t:"CPC-2018-3272-DA", r:"Development Agreement · withdrawn Feb 3, 2022", s:"verified", src:["da"],
+      d:"Withdrawn with no hearing date, which is why the Planning Commission, PLUM and the Council never took an entitlement action on the project.", ln:[] }
+  ]},
+  { id:"cfiles", t:"City Council files", q:"The Council's own record on the parcel.", kids:[
+    { id:"cf14", t:"CF 14-0425-S4", r:"The main Council file for Parcel Y-1", s:"verified", src:["cf14","cf17a"],
+      d:"Opened in 2016 by a Huizar–O'Farrell motion. Holds the option agreement, the negotiating agreement, consultant contracts and four legislative analyst reports (2017–2023). It shows no Council vote approving a development deal and no Council vote terminating one.", ln:["cfdda","cfext","cf23","huizar"] },
+    { id:"cfdda", t:"Development deal never approved", r:"Referred back to committee · July 1, 2022", s:"verified", src:["cf22","cla23"],
+      d:"The purchase agreement with CRA/LA and the development agreement with the developer went back to committee. In February 2023 the Council was still disputing repurchase terms, and the developer had asked for a tax-increment infrastructure district study.", ln:["alp","terminated"] },
+    { id:"cfext", t:"Council seeks a 3-year extension", r:"Sept 27, 2024 · 11–0", s:"verified", src:["cf24","cf24m"],
+      d:"A de León–Park motion asks the Mayor to extend the City's option to 2027. It lists MOCA, The Broad, Disney Hall, Colburn, Angels Flight and the Metro station as neighbors. The extension never happened; the option lapsed in 2025.", ln:["expiry","bass","hd","mocai"] },
+    { id:"cfparent", t:"CF 14-0425", r:"Parent file: CRA/LA future development properties", s:"verified", src:["cfpar"],
+      d:"Lists the parcel at 104,947 sq ft in CD14, with Angels Flight in an airspace easement. Records Oversight Board approvals in 2013–14 and the Dept. of Finance approval of Oct 7, 2014.", ln:["dof","afdeed"] },
+    { id:"cfbid", t:"CF 22-0795", r:"BID security and maintenance contract", s:"verified", src:["cfbid"],
+      d:"The City reinstated and amended its upkeep contract with the Downtown Center BID for the parcel in 2022 and 2023.", ln:[] },
+    { id:"cf23", t:"CF 23-1068", r:"City Attorney closed sessions, 2023–2026", s:"unresolved", src:["cf23"],
+      d:"Linked in the Clerk's system to the Y-1 file, with closed sessions from October 2023 through August 2026 on potential litigation. That it concerns the Angels Landing dispute is an inference, not confirmed.", ln:["suit"] }
+  ]},
+  { id:"inst", t:"Disclosures & settlements", q:"Institutional filings and enforcement outcomes.", kids:[
+    { id:"f990doc", t:"MOCA Form 990 (2024)", r:"IRS nonprofit filing", s:"verified", src:["f990"],
+      d:"MOCA's IRS filing. Its revenue shares (about 75% contributions for the year ending June 2025) differ from the 84/11/5 split MOCA reports on its own site.", ln:[] },
+    { id:"stadium", t:"Angel Stadium settlement", r:"~$123M and 466 affordable units", s:"verified", src:["ag"],
+      d:"A comparable Surplus Land Act dispute in Anaheim, settled only after a state Notice of Violation.", ln:["slaenf"] }
+  ]}
+]},
+{ id:"housing", t:"Housing Context", cat:"flag", q:"Housing promises, enforcement, and allegations around downtown that bear on this site.", kids:[
+  { id:"broken", t:"Promises & precedents", q:"What was promised on Bunker Hill, what got built, and what the county lacks now.", kids:[
+    { id:"promise", t:"Replacement housing", r:"Promised to displaced residents; mostly not rebuilt on the Hill", s:"secondary", src:["rhtf"], lg:"Official record",
+      d:"CRA kept a Bunker Hill Replacement Housing Trust Fund and used it to finance units elsewhere. That displaced households were never re-housed on the Hill (apart from Angelus Plaza) is commentators' view; no official audit counting the unmet units after 2012 has been found.", ln:["angelus"] },
+    { id:"angelus", t:"Angelus Plaza", r:"1,093 senior affordable apartments on Bunker Hill since 1980", s:"secondary", src:["angelus"],
+      d:"Run by Retirement Housing Foundation. The main replacement-type housing actually built on the Hill. No lawsuits, enforcement actions or tenant disputes were found.", ln:[] },
+    { id:"grandaff", t:"Grand Avenue's 20% rule", r:"Affordable share required in every residential building", s:"secondary", src:["emerson","ladnGA"], lg:"Official arrangement",
+      d:"Delivered at The Emerson (2014) and The Grand (86 of 436 units, opened 2022), though delayed with the whole project. The nearest precedent for affordability terms on public Bunker Hill land.", ln:["gaa","related","res2502"] },
+    { id:"hillside", t:"Hillside Villa, Chinatown", r:"Affordability covenant expired, then a rent strike", s:"secondary", src:["hillside"], lg:"Settlement",
+      d:"When the covenant expired in 2018, rent-increase notices of more than 200% followed. The City approved a deal in 2024 that extended the covenant ten years. A lesson in how long this site's affordability term should run.", ln:["res2502"] },
+    { id:"shortage", t:"LA County shortfall", r:"473,603 low-income renter households without an affordable home", s:"verified", src:["chp"],
+      d:"California Housing Partnership, 2026 report (2024 data). Renters need $49.98/hour, 2.8 times the City minimum wage, to afford the average asking rent of $2,599. Don't mix with the 2024 edition's figure (485,667).", ln:["ami","res2502"] }
+  ]},
+  { id:"enforce", t:"Enforcement pressure", q:"What makes an affordable-housing commitment stick.", kids:[
+    { id:"slaenf", t:"How the Surplus Land Act is enforced", r:"HCD Notice of Violation → Attorney General", s:"verified", src:["ag","hcd"],
+      d:"A nominal affordable commitment isn't self-enforcing. The precedent shows the state will act, so a model should carry an enforcement and monitoring cost.", ln:["sla"] },
+    { id:"hcdhe", t:"LA's housing element", r:"Found compliant; state warns against weakening it", s:"verified", src:["hcdhe"], lg:"Official finding",
+      d:"HCD found the 2021–2029 housing element compliant in June 2022. Its November 2024 letter approved rezoning for a 255,432-unit shortfall and warned that weakening affordability or replacement protections could cost the City that status. No HCD Notice of Violation against the City or CRA/LA was found.", ln:["hcd"] },
+    { id:"hcdex", t:"HCD review of other CRA/LA parcels", r:"July 2024 · two sites found exempt", s:"verified", src:["hcdex"], lg:"Official finding",
+      d:"HCD agreed two former CRA/LA sites on MLK Blvd and Marlton Ave were exempt because federal funding rules bar housing there. This parcel is not exempt and is going through the full affordable-housing offer.", ln:["res2502","hcd"] }
+  ]},
+  { id:"alleg", t:"Corruption cases", q:"City Hall cases over development approvals. Read the status label on each.", kids:[
+    { id:"huizar", t:"José Huizar", r:"Former CD14 Councilmember and PLUM chair", s:"verified", src:["huizar","huizarind"], lg:"Conviction",
+      d:"Pleaded guilty in January 2023 to racketeering conspiracy and tax evasion; sentenced January 26, 2024 to 13 years. The DOJ releases name four downtown projects, including 940 S. Hill St. Angels Landing and Bunker Hill are not named in any of them. The full indictment hasn't been text-searched yet. He held the CD14 seat when Angels Landing was selected in 2017.", ln:["jurado","plum","chan","carmel"] },
+    { id:"chan", t:"Raymond Chan", r:"Former Deputy Mayor and LADBS General Manager", s:"verified", src:["chan"], lg:"Conviction",
+      d:"Convicted by a jury in March 2024 on all 12 counts, including racketeering conspiracy; sentenced to 12 years. A co-leader of the scheme around downtown project approvals.", ln:[] },
+    { id:"carmel", t:"Carmel Partners agreement", r:"Affordable requirement cut at PLUM", s:"verified", src:["carmel"], lg:"Settlement (non-prosecution)",
+      d:"The company paid $1.2M in 2021 and admitted PAC contributions sought through a lobbyist. DOJ states the Planning Commission required 11% very-low-income units, and the Huizar-chaired PLUM Committee later accepted the company's request to reduce that. The clearest documented case of an affordability commitment weakened in committee.", ln:["plum"] },
+    { id:"deleon", t:"Developers break with de León", r:"October 2022 · after the leaked City Hall audio", s:"secondary", src:["deleon"], lg:"Press report",
+      d:"Peebles and MacFarlane said they would not work with then-CD14 Councilmember Kevin de León and called for his resignation. Political context for the project's stall.", ln:["alp"] },
+    { id:"price", t:"Curren Price", r:"Sitting CD9 Councilmember · not guilty plea", s:"verified", src:["price"], lg:"Pending allegation · not proven",
+      d:"Charged with 12 felonies. Prosecutors allege he voted on matters involving developers and agencies that paid his wife's firm. He denies the charges. Held to answer in January 2026; next hearing October 16, 2026. Not CD14.", ln:[] },
+    { id:"othercases", t:"Other City Hall cases", r:"Englander (CD12) · Ridley-Thomas (CD10)", s:"secondary", src:["englander","mrt"], lg:"Conviction",
+      d:"Mitch Englander pleaded guilty in 2020 to obstructing an investigation into gifts. Mark Ridley-Thomas was convicted in 2023 of bribery and fraud involving USC; the Ninth Circuit affirmed in August 2026. Neither case is about housing or this site.", ln:[] }
+  ]},
+  { id:"oversight", t:"Homelessness & spending oversight", q:"Court orders and audits that set the City's housing obligations and credibility.", kids:[
+    { id:"lalliance", t:"LA Alliance v. City of LA", r:"No. 2:20-cv-02291 · Judge David O. Carter", s:"secondary", src:["lalliance","laistLA"], lg:"Settlement · court finding of breach",
+      d:"The 2022 settlement set shelter targets. In June 2025 the judge found the City in breach and ordered an independent data monitor. A May 2026 amended agreement calls for 14,000 housing or shelter opportunities by June 30, 2027. A supportive project here could count toward it.", ln:["bass","am"] },
+    { id:"am", t:"Alvarez & Marsal assessment", r:"Court-ordered, March 2025", s:"secondary", src:["am"], lg:"Official finding",
+      d:"Found that about $2.3B in City homelessness spending (2020–2024) couldn't be fully accounted for, that services weren't verified, and that some beds were undocumented.", ln:["lahsa"] },
+    { id:"lahsa", t:"County reviews of LAHSA", r:"2024 and May 2026", s:"secondary", src:["lahsa"], lg:"Official finding",
+      d:"The May 2026 review found about $145.1M in County cash advances not converted to earned revenue, and payment delays to providers. Figures come from search excerpts of the report.", ln:[] },
+    { id:"hhh", t:"Prop HHH audit", r:"City Controller, February 2022", s:"verified", src:["hhh"], lg:"Official finding",
+      d:"Supportive units averaged about $597,000 each in construction and took 3 to 6 years. The cost and time benchmark any affordable project here will be measured against.", ln:["far"] },
+    { id:"ula", t:"Measure ULA", r:"Transfer tax upheld; ~$1.2B raised since 2023", s:"secondary", src:["ula"], lg:"Judgment",
+      d:"The court challenge failed, and the statewide initiative that threatened it was withdrawn in June 2026. A likely source of gap financing for affordable housing on this site.", ln:["sponsor"] }
+  ]}
+]}
+];
+
+const STATUS = { verified:"Primary source", located:"Official doc, summary reported", secondary:"Reported", estimated:"Estimate", unresolved:"Unresolved", nolink:"Source not linked", pending:"Research in progress" };
+
+/* ---------- index the tree ---------- */
+const N = {};
+(function index(list, parent, depth){
+  list.forEach((n,i)=>{
+    N[n.id] = n; n.parent = parent; n.depth = depth;
+    n.cat = n.cat || N[parent].cat;
+    if(depth===0) n.no = `A${i+1}.00`;
+    else if(depth===1) n.no = `${N[parent].no.split('.')[0]}.${i+1}0`;
+    else n.no = `${N[parent].no.slice(0,-1)}${i+1}`;
+    if(n.kids) index(n.kids, n.id, depth+1);
+  });
+})(TREE, null, 0);
+
+const EDGES = []; const seen = new Set();
+Object.values(N).forEach(n=>(n.ln||[]).forEach(m=>{
+  if(!N[m]){ console.warn("Unknown link", n.id, "→", m); return; }
+  const k = [n.id,m].sort().join("|");
+  if(n.id!==m && !seen.has(k)){ seen.add(k); EDGES.push([n.id,m]); }
+}));
+
+const pathOf = id => { const p=[]; for(let x=id; x; x=N[x].parent) p.unshift(x); return p; };
+const leaves = n => n.kids ? n.kids.reduce((a,k)=>a+leaves(k),0) : 1;
+const neighbors = id => EDGES.filter(e=>e.includes(id)).map(e=>e[0]===id?e[1]:e[0]);
+const color = cat => `var(--${cat})`;
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* Map any item to what represents it on the current sheet:
+   a visible tile (inside the focus), or a port (the nearest sheet outside it). */
+function rep(id, focus){
+  const fp = focus ? pathOf(focus) : [];
+  const xp = pathOf(id);
+  const inside = fp.every((f,i)=>xp[i]===f);
+  if(inside){ return xp.length>fp.length ? {id:xp[fp.length], port:false} : null; }
+  let c=0; while(xp[c]===fp[c]) c++;
+  return {id:xp[c], port:true};
+}
+
+/* ---------- state ---------- */
+let focus = null, selected = null, hot = null;
+
+function go(f, sel=null, animate=true){
+  focus = f; selected = sel; hot = null;
+  try{ history.replaceState(null, "", "#" + (sel || f || "map")); }catch(e){}
+  render(animate);
+}
+
+/* ---------- render ---------- */
+function render(animate){
+  const node = focus ? N[focus] : null;
+  const top = focus ? pathOf(focus)[0] : null;
+
+  // spine
+  document.getElementById("spine").innerHTML =
+    `<button class="sheet-btn" data-go="" aria-current="${!focus}"><span class="num">A0.00</span><span class="name">Site Map</span></button>` +
+    TREE.map(t=>`<button class="sheet-btn" data-go="${t.id}" aria-current="${top===t.id}">
+      <span class="sw" style="background:${color(t.cat)}"></span><span class="num">${t.no}</span><span class="name">${esc(t.t)}</span></button>`).join("");
+
+  // title block
+  const shown = selected ? N[selected] : node;
+  document.getElementById("sheetname").textContent = shown ? shown.t : "Site Map";
+  document.getElementById("sheetno").textContent = shown ? shown.no : "A0.00";
+
+  // crumbs
+  const cr = document.getElementById("crumbs");
+  const p = focus ? pathOf(focus) : [];
+  cr.innerHTML = `<button data-go="">Site Map</button>` +
+    p.map((id,i)=> `<span aria-hidden="true">/</span>` + (i===p.length-1 ? `<span class="cur">${esc(N[id].t)}</span>` : `<button data-go="${id}">${esc(N[id].t)}</button>`)).join("") +
+    (focus ? `<button class="up" data-go="${N[focus].parent||""}">↑ Up one sheet</button>` : "");
+
+  // intro
+  const intro = document.getElementById("intro");
+  intro.className = "intro" + (focus ? "" : " lede");
+  intro.textContent = focus ? node.q : "No single actor controls this site. Six topics, each a sheet you can open. Lines show where a person, document or event in one topic connects to another.";
+
+  // tiles
+  const kids = focus ? node.kids : TREE;
+  const tiles = document.getElementById("tiles");
+  tiles.innerHTML = kids.map(k=>tileHTML(k)).join("");
+  if(animate){ tiles.classList.remove("zoom"); void tiles.offsetWidth; tiles.classList.add("zoom"); }
+
+  // edges for this sheet
+  const agg = new Map();
+  EDGES.forEach(([a,b])=>{
+    const ra = rep(a,focus), rb = rep(b,focus);
+    if(!ra || !rb || ra.id===rb.id || (ra.port && rb.port)) return;
+    const [x,y] = ra.port ? [rb,ra] : [ra,rb];      // tile first
+    const key = x.id + "|" + y.id + (y.port?"|p":"");
+    const e = agg.get(key) || {a:x.id, b:y.id, port:y.port, w:0, items:new Set()};
+    e.w++; e.items.add(a); e.items.add(b);
+    agg.set(key, e);
+  });
+  sheetEdges = [...agg.values()];
+
+  // rail of off-sheet connections
+  const ports = {};
+  sheetEdges.filter(e=>e.port).forEach(e=>{ ports[e.b] = (ports[e.b]||0) + e.w; });
+  const rail = document.getElementById("rail");
+  const portIds = Object.keys(ports).sort((a,b)=>ports[b]-ports[a]);
+  rail.hidden = !focus;
+  document.getElementById("map").classList.toggle("root", !focus);
+  rail.innerHTML = `<div class="mark">Links off this sheet</div>` + (portIds.length ? portIds.map(id=>{
+      const n = N[id];
+      return `<button class="port" data-id="${id}" data-go="${n.kids ? id : n.parent}" ${n.kids?"":`data-sel="${id}"`}>
+        <span class="sw" style="background:${color(n.cat)}"></span>
+        <span><span class="pn">${n.no}</span><span class="pt">${esc(n.t)}</span></span>
+        <span class="w">${ports[id]}</span></button>`;
+    }).join("") : `<div class="none">Nothing on this sheet links elsewhere.</div>`);
+
+  renderNotes();
+  wire();
+  requestAnimationFrame(draw);
+}
+
+function tileHTML(n){
+  const chip = n.s ? `<span class="chip" data-s="${n.s}">${STATUS[n.s]}</span>` : "";
+  const conns = n.kids ? "" : neighbors(n.id).length;
+  if(n.depth===0) return `<button class="tile d0" data-id="${n.id}" data-go="${n.id}">
+      <span class="bar" style="background:${color(n.cat)}"></span>
+      <span class="no"><span>${n.no}</span></span>
+      <span class="t">${esc(n.t)}</span><span class="q">${esc(n.q)}</span>
+      <span class="foot">${n.kids.length} groups · ${leaves(n)} items</span><span class="open" aria-hidden="true">Open →</span></button>`;
+  if(n.kids){
+    const names = n.kids.slice(0,3).map(k=>`<li>${esc(k.t)}</li>`).join("") + (n.kids.length>3 ? `<li>+ ${n.kids.length-3} more</li>` : "");
+    return `<button class="tile d1" data-id="${n.id}" data-go="${n.id}">
+      <span class="bar" style="background:${color(n.cat)}"></span>
+      <span class="no"><span>${n.no}</span><span>${n.kids.length} items</span></span>
+      <span class="t">${esc(n.t)}</span><ul>${names}</ul><span class="open" aria-hidden="true">Open →</span></button>`;
+  }
+  return `<button class="tile leaf ${n.s==="pending"?"pending":""}" data-id="${n.id}" data-sel="${n.id}" aria-pressed="${selected===n.id}">
+      <span class="bar" style="background:${color(n.cat)}"></span>
+      <span class="no"><span>${n.no}</span><span>${conns ? conns + (conns===1?" link":" links") : ""}</span></span>
+      <span class="t">${esc(n.t)}</span><span class="q">${esc(n.r)}</span>
+      <span class="foot">${lgChip(n)}${chip}</span></button>`;
+}
+function lgChip(n){
+  if(!n.lg) return "";
+  const k = n.lg.split(/[ ·(]/)[0].toLowerCase();
+  return `<span class="chip lg" data-lg="${k}">${esc(n.lg)}</span>`;
+}
+
+function renderNotes(){
+  const el = document.getElementById("notes");
+  const legend = `<div><h3>How to read this sheet</h3><div class="legend">
+      <div><svg width="34" height="10"><path d="M2 5 H32" stroke="currentColor" stroke-width="1.5"/><circle cx="2" cy="5" r="2.5" fill="currentColor"/><circle cx="32" cy="5" r="2.5" fill="currentColor"/></svg>A shared person, document or event. Thicker lines carry more links.</div>
+      <div><svg width="34" height="10"><path d="M2 5 H32" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3"/></svg>A link to a tile on another sheet, listed at the right.</div>
+      <div>Hover or focus a tile to isolate its lines. Press Esc to go up a sheet.</div>
+      <div>Source strength:</div>
+      ${Object.entries(STATUS).map(([k,v])=>`<div><span class="chip" data-s="${k}">${v}</span></div>`).join("")}
+      <div>Legal status, where a case is involved: <span class="chip lg" data-lg="conviction">Conviction</span> <span class="chip lg" data-lg="settlement">Settlement</span> <span class="chip lg" data-lg="pending">Pending allegation · not proven</span></div>
+    </div></div>`;
+
+  if(!selected){
+    const n = focus ? N[focus] : null;
+    const count = n ? leaves(n) : Object.values(N).filter(x=>!x.kids).length;
+    const pend = Object.values(N).filter(x=>!x.kids && x.s==="pending" && (!n || pathOf(x.id).includes(n.id))).length;
+    el.innerHTML = `<div><div class="mark">${n ? n.no : "A0.00"} · Sheet notes</div>
+      <h2>${n ? esc(n.t) : "Angels Knoll, Bunker Hill Parcel Y-1"}</h2>
+      <p class="body">${n ? esc(n.q) : "A 2.4-acre, ~90-foot slope at 4th and Hill, the last undeveloped piece of the Bunker Hill redevelopment. Open any topic to see its groups, then open a group to see the people, documents and events inside it."}</p>
+      <p class="empty">${count} items on this sheet${pend ? `, ${pend} still being researched` : ""}. Select an item to see its sources and connections.</p></div>` + legend;
+    return;
+  }
+  const n = N[selected];
+  const srcs = n.src.length ? `<ul class="srcs">${n.src.map(k=>`<li><a href="${U[k][1]}" target="_blank" rel="noopener">${esc(U[k][0])}</a></li>`).join("")}</ul>` : `<p class="empty">${n.s==="pending" ? "No sources shown until verified." : "No source linked yet."}</p>`;
+  const nb = neighbors(n.id);
+  const conns = nb.length ? `<div class="conns">${nb.map(id=>{ const m=N[id]; return `<button class="conn" data-go="${m.parent}" data-sel="${id}">
+      <span class="sw" style="background:${color(m.cat)}"></span><span class="cn">${m.no}</span><span>${esc(m.t)}</span></button>`; }).join("")}</div>` : `<p class="empty">No connections recorded.</p>`;
+  const trail = pathOf(n.id).slice(0,-1).map(id=>N[id].t).join(" / ");
+  el.innerHTML = `<div><div class="mark">${n.no} · ${esc(trail)}</div>
+      <h2>${esc(n.t)}</h2><div class="role">${esc(n.r)}</div><div class="foot-row">${lgChip(n)}<span class="chip" data-s="${n.s}">${STATUS[n.s]}</span></div>
+      <p class="body">${esc(n.d)}</p></div>
+    <div><h3>Sources</h3>${srcs}<h3>Connected to</h3>${conns}</div>`;
+}
+
+/* ---------- wires ---------- */
+let sheetEdges = [];
+function center(r, m){ return {x:r.left - m.left + r.width/2, y:r.top - m.top + r.height/2, hw:r.width/2, hh:r.height/2}; }
+function edgePoint(c, dx, dy){          // where the line from c toward (dx,dy) leaves the box
+  const t = Math.min(dx ? c.hw/Math.abs(dx) : Infinity, dy ? c.hh/Math.abs(dy) : Infinity);
+  return {x:c.x + dx*t, y:c.y + dy*t};
+}
+function draw(){
+  const map = document.getElementById("map"), svg = document.getElementById("wires");
+  const m = map.getBoundingClientRect();
+  const el = id => map.querySelector(`[data-id="${CSS.escape(id)}"]`);
+  const active = hot || selected;
+  const maxW = Math.max(1, ...sheetEdges.map(e=>e.w));
+  let out = "";
+  sheetEdges.forEach(e=>{
+    const A = el(e.a), B = el(e.b); if(!A || !B) return;
+    const a = center(A.getBoundingClientRect(), m), b = center(B.getBoundingClientRect(), m);
+    const isHot = active && (e.a===active || e.b===active || e.items.has(active));
+    const col = isHot ? color(N[active].cat) : "";
+    const sw = 1.2 + 2.6*(e.w-1)/Math.max(1,maxW-1);
+    let p1, p2, d;
+    if(e.port){
+      p1 = {x:a.x + a.hw, y:a.y}; p2 = {x:b.x - b.hw, y:b.y};
+      if(p2.x < p1.x){ p1 = {x:a.x, y:a.y + a.hh}; p2 = {x:b.x, y:b.y - b.hh}; d = `M${p1.x},${p1.y} C${p1.x},${(p1.y+p2.y)/2} ${p2.x},${(p1.y+p2.y)/2} ${p2.x},${p2.y}`; }
+      else d = `M${p1.x},${p1.y} C${(p1.x+p2.x)/2},${p1.y} ${(p1.x+p2.x)/2},${p2.y} ${p2.x},${p2.y}`;
+    } else {
+      const dx = b.x-a.x, dy = b.y-a.y;
+      p1 = edgePoint(a, dx, dy); p2 = edgePoint(b, -dx, -dy);
+      const len = Math.hypot(p2.x-p1.x, p2.y-p1.y) || 1, bend = Math.min(46, len*.18);
+      const cx = (p1.x+p2.x)/2 - (p2.y-p1.y)/len*bend, cy = (p1.y+p2.y)/2 + (p2.x-p1.x)/len*bend;
+      d = `M${p1.x},${p1.y} Q${cx},${cy} ${p2.x},${p2.y}`;
+    }
+    const st = col ? ` style="stroke:${col}"` : "";
+    const fl = col ? ` style="fill:${col}"` : ` style="fill:var(--ink-soft)"`;
+    out += `<path class="wire ${isHot?"hot":""}" d="${d}" stroke-width="${sw.toFixed(2)}" ${e.port?'stroke-dasharray="4 4"':""}${st}/>`;
+    out += `<circle class="wire wire-end ${isHot?"hot":""}" cx="${p1.x}" cy="${p1.y}" r="3"${fl}/><circle class="wire wire-end ${isHot?"hot":""}" cx="${p2.x}" cy="${p2.y}" r="3"${fl}/>`;
+    if(e.w>1 && !e.port){
+      const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
+      out += `<text class="wlabel ${isHot?"hot":""}" x="${mx}" y="${my+4}" text-anchor="middle">${e.w}</text>`;
+    }
+  });
+  svg.setAttribute("class", "wires" + (active ? " focus" : ""));
+  svg.innerHTML = out;
+
+  map.querySelectorAll(".tile,.port").forEach(t=>{
+    const id = t.dataset.id;
+    t.classList.toggle("hot", id===hot);
+    const linked = active && sheetEdges.some(e=>(e.a===active&&e.b===id)||(e.b===active&&e.a===id)||(e.items.has(active)&&(e.a===id||e.b===id)&&id!==active));
+    t.classList.toggle("linked", !!linked);
+  });
+}
+
+/* ---------- events ---------- */
+function wire(){
+  document.querySelectorAll("[data-go],[data-sel]").forEach(b=>{
+    b.onclick = ()=>{
+      if(b.dataset.sel){ const f = b.dataset.go!==undefined ? (b.dataset.go||null) : N[b.dataset.sel].parent;
+        if(f===focus && selected===b.dataset.sel){ selected=null; render(false); history.replaceState(null,"","#"+(focus||"map")); return; }
+        if(f===focus){ selected=b.dataset.sel; try{history.replaceState(null,"","#"+selected);}catch(e){} render(false); return; }
+        return go(f, b.dataset.sel); }
+      go(b.dataset.go || null);
+    };
+  });
+  document.querySelectorAll("#map [data-id]").forEach(t=>{
+    const on = ()=>{ hot = t.dataset.id; draw(); }, off = ()=>{ hot = null; draw(); };
+    t.onmouseenter = on; t.onfocus = on; t.onmouseleave = off; t.onblur = off;
+  });
+}
+document.addEventListener("keydown", e=>{
+  if(e.key==="Escape"){ if(selected){ selected=null; render(false); } else if(focus){ go(N[focus].parent); } }
+});
+new ResizeObserver(()=>draw()).observe(document.getElementById("map"));
+document.getElementById("tiles").addEventListener("animationend", draw);
+if(document.fonts) document.fonts.ready.then(draw);
+
+/* deep link: #money, #value, #far … */
+(function start(){
+  const h = decodeURIComponent(location.hash.slice(1));
+  if(N[h]){ N[h].kids ? go(h, null, false) : go(N[h].parent, h, false); }
+  else go(null, null, false);
+})();
+</script>
+
+</body>
+</html>
